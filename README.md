@@ -12,5 +12,11 @@ A program which solves the "word chain game". A word chain is a collection of wo
 ## Discussion for Second attempted solution (with building a dynamic graph)
 - The ideas from the first solution have been developed to attempt to build a dynamic graph. The execution speed showed similar performance for the given dataset. The hypothesis is that this solution will outperform the first solution for bigger datasets.
 
-## Discussion for Third attempted solution (with utilising the sorting behavior of the words array)
-- The provided sorted words array and the ability to use lookup of the values at O(log2_N) can be utilized to build another solution. (To be developed, this is for example useful when there are memory limits).
+## Remarkable properties of the word chain function
+It is interesting to shine the light on some of the remarkable properties of the produced word chain function that can be useful for its applications and deep optimizations of its use.
+- AbsMinVal. For every input, we can limit the value of the shortest chain from below by computing the sum of differences between "start" and "end" strings. The prove can be trivially done via mathematical induction or via a contradiction.
+- AbsMaxVal. For every input, we can limit the value of the shortest chain from above. Lets define N as the total number of nodes. Lets define R as the minimum number of neighbors among the given nodes. Then N <= (R+1)AbsMaxVal / 3, => AbsMaxVal = ceiling(3N / (R+1)). Lets prove it be grouping each node into the group by the following principle. Group0 is the start. Group1 is the neighbours of the start. Group2 is the nodes that can be reached further from Group1. Etc. Lets observe that for each three sequential groups (GroupN-1, GroupN, GroupN+1) the total number of nodes in them is at least R+1 nodes, => on average (R+1)/3 per node. Therefore, the minimum number of nodes in between the arbitrary nodes is (R+1)AbsMaxVal/3 such that it is slightly above N. 
+
+## Discussion for next steps
+- The provided sorted words array and the ability to use lookup of the values at O(log2_N) can be utilized to build another solution. This is for example useful when there are memory limits.
+- The application of the remarkable properties and the knowing typical datasets that this function is to be used at, can gain some insights into unobvious optimisation of the given function or its usage.
