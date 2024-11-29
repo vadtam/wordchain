@@ -30,13 +30,15 @@ impl StringPattern {
 type Node = usize;
 type Neighbours = Vec<Node>;
 
-pub fn word_chain_game(start: &str, end: &str, words: &[String]) -> Option<usize> {
+pub fn word_chain_game_static(start: &str, end: &str, words: &[String]) -> Option<usize> {
     /*
+        #2 solution
+
         observations (and assumptions):
             1. start and end exist in words
-            2. the words sorting is not important for N^2 complexity
-     */
-    
+            2. the words sorting is not important
+    */
+
     // compute graph layout
     let mut graph: HashMap<Node, Neighbours> = HashMap::new();
     let mut node_from: Option<Node> = None;
@@ -110,9 +112,79 @@ pub fn word_chain_game(start: &str, end: &str, words: &[String]) -> Option<usize
     None
 }
 
+
+pub fn word_chain_game(start: &str, end: &str, words: &[String]) -> Option<usize> {
+    /*
+        #1 solution
+
+        observations (and assumptions):
+            1. start and end exist in words
+            2. the words sorting is not important
+    */
+    if start == end {
+        return Some(0);
+    }
+
+    let ascii_chars: Vec<char> = (0..=127).map(|i| i as u8 as char).collect();
+    //let words_set: HashSet<String> = words.iter().cloned().collect();
+    let words_set: HashSet<String> = words
+        .iter()
+        .map(|word| {
+            StringPattern::strip_suffix(word).to_owned()
+        })
+        .collect();
+
+
+    let mut queue: VecDeque<(&str, Vec<&str>, usize)> = VecDeque::new();
+    let mut visited: HashSet<&str> = HashSet::new();
+    
+    // Start BFS with the starting node
+    queue.push_back((start, vec![start], 0));
+    visited.insert(start);
+
+    while let Some((current_node, path, path_length)) = queue.pop_front() {
+        // get current node
+        let capacity = 128*start.len();
+        {
+            let mut char_idx = 0;
+            let mut ascii_char_idx = 0;
+            for _ in 0..capacity {
+                let mut neighbor = current_node.to_string(); // Create a mutable String
+                neighbor.replace_range(char_idx..char_idx + 1, &ascii_chars[ascii_char_idx].to_string());
+
+                // Lookup in O(1)
+                if words_set.contains(&neighbor) {
+                    //neighbors.push(&word);
+                    if !visited.contains(&*neighbor) {
+                        let mut new_path = path.clone();
+                        new_path.push(words_set.get(&neighbor).unwrap());
+        
+                        if neighbor == end {
+                            return Some(path_length + 1);
+                        }
+        
+                        queue.push_back((words_set.get(&neighbor).unwrap(), new_path, path_length + 1));
+                        visited.insert(words_set.get(&neighbor).unwrap());
+                    }
+                }
+
+                ascii_char_idx += 1;
+                if ascii_char_idx == 128 {
+                    ascii_char_idx = 0;
+                    char_idx += 1;
+                }
+            }
+        }
+    }
+
+    None
+}
+
 #[cfg(test)]
 mod tests {
     use crate::word_chain_game;
+    use crate::word_chain_game_static;
+    use std::time::Instant;
 
     #[test]
     fn test_path_exists() {
@@ -152,6 +224,27 @@ mod tests {
         let start = "yid";
         let end = "zin";
         assert_eq!(word_chain_game(start, end, &word_list), Some(2));
+    }
+
+    #[test]
+    fn test_performance() {
+        let word_list = read_word_list().unwrap();
+        let start = "dog";
+        let end = "imp";
+        
+        // Measure time for function_one
+        let timer = Instant::now();
+        assert_eq!(word_chain_game(start, end, &word_list), Some(7));
+        let duration_one = timer.elapsed();
+        println!("N2 static graph, Time elapsed: {:?}", duration_one);
+
+        // Measure time for function_one
+        let timer = Instant::now();
+        assert_eq!(word_chain_game_static(start, end, &word_list), Some(7));
+        let duration_two = timer.elapsed();
+        println!("N dynamic graph, Time elapsed: {:?}", duration_two);
+
+        assert!(true);
     }
 
     fn read_word_list() -> Result<Vec<String>, std::io::Error> {
