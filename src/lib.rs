@@ -32,7 +32,7 @@ type Neighbours = Vec<Node>;
 
 pub fn word_chain_game_static(start: &str, end: &str, words: &[String]) -> Option<usize> {
     /*
-        #2 solution
+        #1 solution
 
         observations (and assumptions):
             1. start and end exist in words
@@ -115,7 +115,7 @@ pub fn word_chain_game_static(start: &str, end: &str, words: &[String]) -> Optio
 
 pub fn word_chain_game(start: &str, end: &str, words: &[String]) -> Option<usize> {
     /*
-        #1 solution
+        #2 solution
 
         observations (and assumptions):
             1. start and end exist in words
